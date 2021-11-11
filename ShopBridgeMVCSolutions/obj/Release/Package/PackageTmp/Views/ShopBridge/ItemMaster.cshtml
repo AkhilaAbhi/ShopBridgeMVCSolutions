@@ -1,0 +1,131 @@
+﻿@model ShopBridgeEntities.ItemModel
+@{
+    ViewBag.Title = "ItemMaster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+}
+
+@Scripts.Render("~/bundles/jquery") 
+<script src="~/Scripts/jquery.unobtrusive-ajax.min.js"></script>
+@{
+    var Categories = new List<SelectListItem>();
+    var _Categories = ShopBridgeServiceProvider.ShopBridgeProvider.GetDropData();
+    //Categories.Add(new SelectListItem() { Value = "0", Text = "Select Category" });
+    foreach (var item in _Categories.CategoryList)
+    {
+        Categories.Add(new SelectListItem() { Value = item.CategoryId.ToString(), Text = item.CategoryName });
+    }
+
+    var Units = new List<SelectListItem>();
+    var _Units = ShopBridgeServiceProvider.ShopBridgeProvider.GetDropData();
+    //Units.Add(new SelectListItem() { Value = "0", Text = "Select Unit" });
+    foreach (var item in _Units.UnitList)
+    {
+        Units.Add(new SelectListItem() { Value = item.UnitId.ToString(), Text = item.UnitName });
+    }
+
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+
+}
+<script src="~/Content/parsley.js"></script>
+<link href="~/Content/parsley.css" rel="stylesheet" />
+<h2>ItemMaster</h2>
+
+
+@using (Ajax.BeginForm("SaveItem", "ShopBridge", null, new AjaxOptions() { HttpMethod = "POST", OnSuccess = "SaveItem_success",  OnFailure = "AjaxFailureSaveItem" }, new { @class = "form-horizontal", id = "frmSaveItem", role = "form", data_parsley_validate = "true" }))
+{
+    @Html.AntiForgeryToken()
+    
+     
+<table>
+    @Html.HiddenFor(m=>m.ItemId)
+    <tr>
+        <td>Item Name</td>        
+    </tr>    
+    <tr>        
+        <td>@Html.TextBoxFor(m => m.ItemName, new { @class = "form-control", id = "txtName", placeholder = "Item Name", data_parsley_required = "true", data_parsley_pattern = "^[a-z A-Z\\s]+$", data_parsley_trigger = "change keypress keyup focusout", data_parsley_maxlength = "24" })</td>
+    </tr>
+    
+    <tr>
+        <td>Category</td>
+        <td>&nbsp;</td>
+        <td>Unit</td>
+    </tr>
+    <tr>        
+        <td>@Html.DropDownListFor(m => m.CategoryId, Categories, new { @class = "form-control", id = "drCategory" })</td>
+        <td>&nbsp;</td>
+        <td>@Html.DropDownListFor(m => m.UnitId, Units, new { @class = "form-control", id = "drUnit" })</td>
+    </tr>
+    <tr>
+        <td>Item Price</td>
+        <td>&nbsp;</td>
+        <td>Item Cost</td>
+        
+    </tr>
+    <tr>
+        <td>@Html.TextBoxFor(m => m.ItemPrice, new { @class = "form-control", id = "txtPrice", placeholder = "Item Price", data_parsley_required = "true", data_parsley_type = "number", data_parsley_trigger = "change keypress keyup focusout", data_parsley_required_message = "Enter Item Price", data_parsley_maxlength = "6" })</td>
+        <td>&nbsp;</td>
+        <td>@Html.TextBoxFor(m => m.ItemCost, new { @class = "form-control", id = "txtCost", placeholder = "Item Cost", data_parsley_required = "true", data_parsley_type = "number", data_parsley_trigger = "change keypress keyup focusout", data_parsley_required_message = "Enter Item Cost", data_parsley_maxlength = "6" })</td>
+    </tr>
+    <tr><td>&nbsp;</td></tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td><button type="submit" id="btnSave" class="btn btn-primary"> Submit </button></td>
+    </tr>
+
+
+</table>
+}
+
+
+<div class="modal fade" id="modal-success" tabindex="-1" role="alertdialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Item Master</h4>
+            </div>
+            <div class="modal-body">
+                <p class="text-center">Item added successfully</p>
+            </div>
+            <div class="modal-footer"> 
+                <button type="submit" onclick="closepopup()" class="btn btn-primary">OK</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+    $("#btnSave").click(function () {
+        debugger;
+        var ParsleyInstance = $("#frmSaveItem").parsley();
+        $("#frmSaveItem").parsley().validate();
+        if (ParsleyInstance.isValid()) {
+            //alert("success");
+            //$("#frmSaveItem").submit();
+        }
+        else {
+            return false;
+        }
+    })
+
+    function SaveItem_success(data) {
+        debugger;
+        if (data.success == true) {
+            $('#modal-success').modal('show');
+            //alert(data.message);            
+        }
+    }
+
+    function closepopup() {
+        $('#modal-success').modal('hide');
+        location.href = '/ShopBridge/SearchItem';
+    }
+
+</script>

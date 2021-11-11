@@ -1,0 +1,165 @@
+﻿
+@{
+    ViewBag.Title = "SearchItem";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int ItemIdforDelete = 0;
+}
+
+<h2>SearchItem</h2>
+
+<button type="button" id="btnAdd" class="btn btn-primary"  onclick="AddNewItem()" style="float:right; "> + Add New Item </button>
+<br /><br /><br />
+<table class="display table table-bordered table-striped" id="MyDT">
+    <thead>
+        <tr>
+            <th>Item Name</th>
+            <th>Unit</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Cost</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+    <tfoot>
+        <tr>
+            <th>Item Name</th>
+            <th>Unit</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Cost</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
+
+
+<div class="modal fade" id="modal-delete-item" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Delete Item</h4>
+            </div>
+                <div class="modal-body">
+                    <p class="text-center">Are you sure you want to delete this Item?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" onclick="DeleteNotConfirm()"  class="btn btn-white" data-dismiss="modal">No</button>
+                    <button type="submit" onclick="DeleteConfirm()" class="btn btn-primary">Yes</button>
+                </div>
+            
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    
+    $(document).ready(function () {
+        //alert(1);
+        //$("#MyDT").DataTable();
+        GetItems();
+    })
+
+
+    var GetItems = function () {
+        $.ajax({
+            type: "GET",
+            url: "/ShopBridge/GetSearchItems",
+            //dataType: "json",
+            //contentType: "application/json; charset=utf-8",
+            //data: JSON.stringify({
+            //    "id": ExperienceId,
+            //    "type": AvtiveDeactive
+            //}),
+            success: function (response) {
+                //showsaveModal_(data.title, data.message);
+                bindDt(response);
+            },
+            error: function (data) {
+                alert('error')
+            }
+        });
+    }
+
+    var bindDt = function (response) {
+
+        debugger;
+
+        $('#MyDT').DataTable().destroy();
+
+
+        $("#MyDT").DataTable({
+
+            "aaData": response,
+            "aoColumns": [
+                { "mData": "ItemName" },
+                { "mData": "UnitName" },
+                { "mData": "CategoryName" },
+                { "mData": "ItemPrice" },
+                { "mData": "ItemCost" },                
+                {
+                    "mData": "ItemId",
+                    "render": function (ItemId, type, full, meta) {
+                        debugger
+                        return '<a href="#" onclick="EditItem(' + ItemId + ')"><i class="glyphicon glyphicon-pencil"></i></a>'
+                    }
+                },
+                {
+                    "mData": "ItemId",
+                    "render": function (ItemId, type, full, meta) {
+                        debugger
+                        return '<a href="#" onclick="DeleteItem(' + ItemId + ')"><i class="glyphicon glyphicon-remove" style="color : red"></i></a>'
+                    }
+                },
+            ]
+
+        });
+
+
+
+    }
+
+    var EditItem = function (itemId) {
+
+        window.location.href = '/ShopBridge/ItemMaster?id=' + itemId;
+
+    }
+
+    var DeleteItem = function (itemId) {
+        ItemIdforDelete = itemId;
+        $('#modal-delete-item').modal('show');
+    }
+   
+    var DeleteConfirm = function () {
+
+        debugger;
+        $.ajax({
+            type: "POST",
+            url: "/ShopBridge/DeleteItem",
+            dataType: "Json",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                "itemId": ItemIdforDelete,
+            }),
+            success: function (data) {
+                $('#modal-delete-item').modal('hide');
+                GetItems();
+            }
+        });
+
+    }
+    var DeleteNotConfirm = function () {
+        $('#modal-delete-item').modal('hide');
+    }
+
+    var AddNewItem = function () {
+        window.location.href = '/ShopBridge/ItemMaster';
+    }
+
+</script>
